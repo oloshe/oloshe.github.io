@@ -17,20 +17,20 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"skrgiao.fun","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="个人博客">
 <meta property="og:type" content="website">
 <meta property="og:title" content="雅各布的博客">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:url" content="https://skrgiao.fun/index.html">
 <meta property="og:site_name" content="雅各布的博客">
 <meta property="og:description" content="个人博客">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:author" content="Jacob Jiang">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/">
+<link rel="canonical" href="https://skrgiao.fun/">
 
 
 <script id="page-configurations">
@@ -116,6 +116,21 @@
     <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
 
   </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
@@ -148,10 +163,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/03/nodejs-ffmpeg-%E5%AE%9E%E7%8E%B0%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE/">
+    <link itemprop="mainEntityOfPage" href="https://skrgiao.fun/2020/05/03/nodejs-ffmpeg-%E5%AE%9E%E7%8E%B0%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Jacob Jiang">
       <meta itemprop="description" content="个人博客">
     </span>
@@ -179,8 +194,17 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-05-04 00:44:51" itemprop="dateModified" datetime="2020-05-04T00:44:51+08:00">2020-05-04</time>
+                <time title="修改时间：2020-05-04 16:40:51" itemprop="dateModified" datetime="2020-05-04T16:40:51+08:00">2020-05-04</time>
               </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">编程</span></a>
+                </span>
+            </span>
 
           
 
@@ -194,117 +218,14 @@
 
       
           <p>使用 <strong>node.js</strong> + <strong>ffmpeg</strong>  实现视频转动图接口服务，利用 <strong>child_process</strong> 执行 <strong>ffmpeg</strong> 命令行实现，<strong>理论上可以ffmpeg所有功能</strong>。</p>
-<h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><ul>
-<li>ffmpeg  <a href="https://www.ffmpeg.org/download.html" target="_blank" rel="noopener"><strong>官网下载</strong></a></li>
-<li>node <a href="http://nodejs.cn/download/" target="_blank" rel="noopener"><strong>中文网下载</strong></a><h2 id="依赖包"><a href="#依赖包" class="headerlink" title="依赖包"></a>依赖包</h2>使用npm 安装所需的依赖包<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># npm</span><br><span class="line">npm install express multer</span><br><span class="line"># or yarn</span><br><span class="line">yarn add express multer</span><br></pre></td></tr></table></figure></li>
-<li>Express 是基于 <a href="https://nodejs.org/en/" target="_blank" rel="noopener">Node.js</a> 平台，快速、开放、极简的 Web 开发框架</li>
-<li>Multer 是用于处理文件上传的中间件</li>
-</ul>
-<h1 id="搭建Https服务器"><a href="#搭建Https服务器" class="headerlink" title="搭建Https服务器"></a>搭建Https服务器</h1><blockquote>
-<p>搭建服务器主要有以下作用：</p>
-<ol>
-<li>上传视频文件到服务器以进行处理</li>
-<li>处理完成后的GIF图保存在服务器的静态目录下，以便让用户访问 / 下载</li>
-</ol>
-</blockquote>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.js</span></span><br><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>);</span><br><span class="line"><span class="keyword">const</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</span><br><span class="line"><span class="keyword">const</span> https = <span class="built_in">require</span>(<span class="string">'https'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//static 托管静态文件 用于客户端访问gif图片</span></span><br><span class="line">app.use(<span class="string">'/public'</span>,express.static(path.join(__dirname,<span class="string">'public'</span>)));</span><br><span class="line"></span><br><span class="line"><span class="comment">//引入 ffmpegRouter.js </span></span><br><span class="line"><span class="keyword">const</span> ffmpegRouter= <span class="built_in">require</span>(<span class="string">'./ffmpegRouter'</span>)</span><br><span class="line">app.use(<span class="string">'/ffmpeg'</span>,ffmpegRouter);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Configuare https</span></span><br><span class="line"><span class="keyword">const</span> options = &#123;</span><br><span class="line">  key : fs.readFileSync(<span class="string">'[key文件路径]'</span>),</span><br><span class="line">  cert: fs.readFileSync(<span class="string">"[pem文件路径]"</span>),</span><br><span class="line">&#125;</span><br><span class="line">http.createServer(app).listen(<span class="number">80</span>); <span class="comment">// http端口</span></span><br><span class="line">https.createServer(options, app).listen(<span class="number">443</span>); <span class="comment">// https 端口</span></span><br></pre></td></tr></table></figure>
-<h2 id="路由-ffmpegRouter-js"><a href="#路由-ffmpegRouter-js" class="headerlink" title="路由 ffmpegRouter.js"></a>路由 ffmpegRouter.js</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ffmpegRouter.js</span></span><br><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">const</span> router = express.Router()</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>)</span><br><span class="line"><span class="keyword">const</span> child = <span class="built_in">require</span>(<span class="string">'child_process'</span>)</span><br><span class="line"><span class="keyword">const</span> multer  = <span class="built_in">require</span>(<span class="string">'multer'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> storage = multer.diskStorage(&#123;</span><br><span class="line">  destination: <span class="function"><span class="keyword">function</span>(<span class="params">req,file,cb</span>)</span>&#123;</span><br><span class="line">    cb(<span class="literal">null</span>,<span class="string">'./uploads'</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">  filename: <span class="function"><span class="keyword">function</span>(<span class="params">req,file,cb</span>)</span>&#123;</span><br><span class="line">    <span class="comment">// 以时间格式来命名文件，28800000为8小时的毫秒数，为了去除时区的误差</span></span><br><span class="line">    <span class="keyword">const</span> date = <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="built_in">Date</span>.now()+<span class="number">28800000</span>).toJSON().substring(<span class="number">5</span>, <span class="number">16</span>).replace(<span class="regexp">/(T|:)/g</span>, <span class="string">'-'</span>);</span><br><span class="line">    <span class="comment">// 随机 0 ~ 1000 的整数，防止同一时间上传的文件被覆盖</span></span><br><span class="line">    <span class="keyword">const</span> random = <span class="built_in">parseInt</span>(<span class="built_in">Math</span>.random() * <span class="number">1000</span>);</span><br><span class="line">    <span class="comment">// 提取文件类型</span></span><br><span class="line">    <span class="keyword">const</span> type = file.originalname.split(<span class="string">'.'</span>).pop();</span><br><span class="line">    <span class="keyword">const</span> filename = <span class="string">`<span class="subst">$&#123;date&#125;</span>-<span class="subst">$&#123;random&#125;</span>.<span class="subst">$&#123;type&#125;</span>`</span></span><br><span class="line">    cb(<span class="literal">null</span>,filename);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">const</span> upload = multer(&#123; storage &#125;)</span><br><span class="line"></span><br><span class="line">router.post(<span class="string">'/transform/gif'</span>, upload.single(<span class="string">'file'</span>), (req, res) =&gt; &#123;</span><br><span class="line">  transform(req.file, req, res)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transform</span>(<span class="params">file, req, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> &#123; path, filename &#125; = file;</span><br><span class="line">  <span class="keyword">let</span> &#123; </span><br><span class="line">    start, <span class="comment">//开始时间</span></span><br><span class="line">    end, <span class="comment">//结束时间</span></span><br><span class="line">    sizeLimit, <span class="comment">//大小限制</span></span><br><span class="line">    dpi, <span class="comment">//分辨率</span></span><br><span class="line">    framePerSecond, <span class="comment">//每秒帧率</span></span><br><span class="line">    pts, <span class="comment">//倍速</span></span><br><span class="line">    toning, <span class="comment">//调色</span></span><br><span class="line">    contrast, <span class="comment">// 对比度</span></span><br><span class="line">    brightness, <span class="comment">// 亮度</span></span><br><span class="line">    saturation, <span class="comment">// 饱和度</span></span><br><span class="line">    effects, <span class="comment">// 特效</span></span><br><span class="line">    crop, <span class="comment">// 裁剪</span></span><br><span class="line">  &#125; = req.body;</span><br><span class="line">  <span class="comment">//类型检查</span></span><br><span class="line">  <span class="keyword">let</span> type = filename.split(<span class="string">'.'</span>).pop();</span><br><span class="line">  <span class="keyword">let</span> allowTypes = [<span class="string">'gif'</span>, <span class="string">'mp4'</span>,<span class="string">'avi'</span>, <span class="string">'amv'</span>, <span class="string">'dmv'</span>, <span class="string">'mov'</span>, <span class="string">'qt'</span>, <span class="string">'flv'</span>, <span class="string">'mpeg'</span>, <span class="string">'mpg'</span>, <span class="string">'m4v'</span>, <span class="string">'m3u8'</span>, <span class="string">'webm'</span>, </span><br><span class="line">    <span class="string">'mtv'</span>, <span class="string">'dat'</span>, <span class="string">'wmv'</span>, <span class="string">'ram'</span>, <span class="string">'3gp'</span>, <span class="string">'viv'</span>, <span class="string">'rm'</span>, <span class="string">'rmvb'</span>];</span><br><span class="line">  <span class="keyword">if</span> (!allowTypes.includes(type)) &#123;</span><br><span class="line">    fs.unlink(path, () =&gt; &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">`文件类型不支持：<span class="subst">$&#123;filename&#125;</span> `</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> res.send(&#123; <span class="attr">err</span>: <span class="number">-2</span>, <span class="attr">msg</span>: <span class="string">'文件类型不支持'</span> &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> Option = &#123;</span><br><span class="line">    list: [<span class="string">'-ss'</span>, <span class="string">'-to'</span>, <span class="string">'-i'</span>, <span class="string">'-fs'</span>, <span class="string">'-vf'</span>, <span class="string">'-s'</span>, <span class="string">'-r'</span>, <span class="string">'-y'</span>],</span><br><span class="line">    init() &#123;</span><br><span class="line">      <span class="keyword">this</span>.list.forEach(<span class="function"><span class="params">x</span> =&gt;</span> <span class="keyword">this</span>[x] = <span class="string">''</span>)</span><br><span class="line">    &#125;,</span><br><span class="line">    add(name, value) &#123;</span><br><span class="line">      <span class="keyword">this</span>[name] += (<span class="keyword">this</span>[name] ? <span class="string">','</span> : <span class="string">''</span>) + value;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="keyword">get</span>(name) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>[name] ? <span class="string">`<span class="subst">$&#123;name&#125;</span> <span class="subst">$&#123;<span class="keyword">this</span>[name]&#125;</span> `</span> : <span class="string">''</span></span><br><span class="line">    &#125;,</span><br><span class="line">    toString() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.list.reduce(<span class="function">(<span class="params">(p,c</span>) =&gt;</span>  p + <span class="keyword">this</span>.get(c) ),<span class="string">''</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  Option.init()</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   *  ...配置Option 下文解释</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  </span><br><span class="line">  Option.add(<span class="string">'-i'</span>, path);</span><br><span class="line">  <span class="keyword">let</span> rfilen = <span class="string">`public/picture/gif/<span class="subst">$&#123;filename&#125;</span>.gif`</span></span><br><span class="line">  Option.add(<span class="string">'-y'</span>, rfilen);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> optionStr = Option.toString()</span><br><span class="line"></span><br><span class="line">  child.exec(<span class="string">`ffmpeg <span class="subst">$&#123;optionStr&#125;</span>`</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</span><br><span class="line">    fs.unlink(path, () =&gt; &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'视频转GIF：'</span> + filename);</span><br><span class="line">      <span class="built_in">console</span>.log(optionStr);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="built_in">console</span>.error(err)</span><br><span class="line">      res.send(&#123; <span class="attr">err</span>: <span class="number">-1</span>, <span class="attr">msg</span>: err &#125;)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">//定时删除</span></span><br><span class="line">      <span class="keyword">const</span> mins = <span class="number">60</span> * <span class="number">3</span>;</span><br><span class="line">      <span class="keyword">const</span> limitTime = mins * <span class="number">60</span> * <span class="number">1000</span></span><br><span class="line">      <span class="keyword">const</span> expired = +<span class="keyword">new</span> <span class="built_in">Date</span>() + limitTime</span><br><span class="line">      <span class="keyword">const</span> stat = fs.statSync(rfilen)</span><br><span class="line">      setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        fs.unlink(rfilen, () =&gt; &#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">`GIF文件：<span class="subst">$&#123;filename&#125;</span> 已删除！`</span>)</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;, limitTime)</span><br><span class="line">      res.send(&#123;</span><br><span class="line">        err: <span class="number">0</span>,</span><br><span class="line">        msg: <span class="string">`视频转gif处理成功,有效期<span class="subst">$&#123;mins&#125;</span>分钟！`</span>,</span><br><span class="line">        url: <span class="string">`https://[服务器地址]/<span class="subst">$&#123;rfilen&#125;</span>`</span>,</span><br><span class="line">        size: stat.size,</span><br><span class="line">        expiredIn: expired,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = router</span><br></pre></td></tr></table></figure>
-<h2 id="body数据"><a href="#body数据" class="headerlink" title="body数据"></a>body数据</h2><table>
-<thead>
-<tr>
-<th>名字</th>
-<th>类型</th>
-<th>说明</th>
-<th>栗子</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>start</td>
-<td>Number</td>
-<td>开始时间</td>
-<td>0</td>
-</tr>
-<tr>
-<td>end</td>
-<td>Number</td>
-<td>结束时间</td>
-<td>10</td>
-</tr>
-<tr>
-<td>sizeLimit</td>
-<td>String</td>
-<td>大小限制</td>
-<td>3M</td>
-</tr>
-<tr>
-<td>dpi</td>
-<td>String</td>
-<td>分辨率</td>
-<td>720p，640x480</td>
-</tr>
-<tr>
-<td>framePerSecond</td>
-<td>String</td>
-<td>帧率</td>
-<td>30</td>
-</tr>
-<tr>
-<td>pts</td>
-<td>Number</td>
-<td>倍速，取值范围 <strong>[0.25,4]</strong></td>
-<td>0.75，2.5</td>
-</tr>
-<tr>
-<td>contrast</td>
-<td>Number</td>
-<td>对比度</td>
-<td>1</td>
-</tr>
-<tr>
-<td>brightness</td>
-<td>Number</td>
-<td>亮度</td>
-<td>1</td>
-</tr>
-<tr>
-<td>saturation</td>
-<td>Number</td>
-<td>饱和度</td>
-<td>1</td>
-</tr>
-<tr>
-<td>crop</td>
-<td>String</td>
-<td>格式为<code>w:h:x:y</code> 表示裁剪的宽高和XY坐标</td>
-<td>200:300:0:30</td>
-</tr>
-</tbody></table>
-<h2 id="Option"><a href="#Option" class="headerlink" title="Option"></a>Option</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Option = &#123;</span><br><span class="line">    list: [<span class="string">'-ss'</span>, <span class="string">'-to'</span>, <span class="string">'-i'</span>, <span class="string">'-fs'</span>, <span class="string">'-vf'</span>, <span class="string">'-s'</span>, <span class="string">'-r'</span>, <span class="string">'-y'</span>],</span><br><span class="line">    init() &#123;</span><br><span class="line">      <span class="keyword">this</span>.list.forEach(<span class="function"><span class="params">x</span> =&gt;</span> <span class="keyword">this</span>[x] = <span class="string">''</span>)</span><br><span class="line">    &#125;,</span><br><span class="line">    add(name, value) &#123;</span><br><span class="line">      <span class="keyword">this</span>[name] += (<span class="keyword">this</span>[name] ? <span class="string">','</span> : <span class="string">''</span>) + value;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="keyword">get</span>(name) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>[name] ? <span class="string">`<span class="subst">$&#123;name&#125;</span> <span class="subst">$&#123;<span class="keyword">this</span>[name]&#125;</span> `</span> : <span class="string">''</span></span><br><span class="line">    &#125;,</span><br><span class="line">    toString() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.list.reduce(<span class="function">(<span class="params">(p,c</span>) =&gt;</span>  p + <span class="keyword">this</span>.get(c)),<span class="string">''</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Option-list"><a href="#Option-list" class="headerlink" title="Option.list"></a>Option.list</h3><p>该字段的顺序就是导出字符串时的选项顺序</p>
-<blockquote>
-<p> <strong>-ss</strong> ：<em>当用作输入选项时（在-i之前），在该输入文件中查找位置。（作为开始时间点）</em><br><strong>-to</strong> ：<em>结束读取的时间点</em><br><strong>-i</strong> ：<em>输入文件的地址</em><br><strong>-fs</strong> : <em>设置文件大小限制，以字节表示。超过限制后不再写入字节块。输出文件的大小略大于请求的文件大小。</em><br><strong>-vf</strong> ：<em>-filter:v的简称，创建滤波图并使用它来过滤流，本文用于修改倍速和分辨率</em><br><strong>-s</strong> ：<em>设置帧大小，用于设置分辨率</em><br><strong>-r</strong> ：<em>设置帧率</em><br><strong>-y</strong> ：<em>输出文件地址，注意：重复名直接覆盖而不询问</em></p>
-<p>内容参考自：<a href="https://www.ffmpeg.org/ffmpeg.html" target="_blank" rel="noopener"><strong>ffmpeg 文档</strong></a> </p>
-</blockquote>
-<h3 id="Option-init"><a href="#Option-init" class="headerlink" title="Option.init()"></a>Option.init()</h3><p>初始化设置，为 Option 添加 <strong>list</strong> 里的所有字段</p>
-<h3 id="Option-add-name-value"><a href="#Option-add-name-value" class="headerlink" title="Option.add(name, value)"></a>Option.add(name, value)</h3><p>为字段添加值，若不为空，则在前面添加 <code>&quot;,&quot;</code> 来分隔</p>
-<h3 id="Option-get-name"><a href="#Option-get-name" class="headerlink" title="Option.get(name)"></a>Option.get(name)</h3><p>获取某个选项的值，把 key 和 value 拼接起来，自动在尾部添加空格，若没有数据则返回空字符串</p>
-<h3 id="Option-toString"><a href="#Option-toString" class="headerlink" title="Option.toString()"></a>Option.toString()</h3><p>利用 <code>Array.prototype.reduce()</code> 方法，按照顺序返回所有字段字符串</p>
-<h3 id="打印结果"><a href="#打印结果" class="headerlink" title="打印结果"></a>打印结果</h3><p><img src="https://upload-images.jianshu.io/upload_images/19448222-bcaefe9fe5e4b12d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="调用接口的输出"></p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><blockquote>
-<p>配置的参数设置都是参考 <a href="https://www.ffmpeg.org/ffmpeg.html" target="_blank" rel="noopener"><strong>ffmpeg 文档</strong></a> ，若想要实现更多功能可以前往官网查阅资料。</p>
-<p>需要注意的点：</p>
-<ul>
-<li>使用了 <code>-vf scale=...</code> 命令之后，会将视频的分辨率改变，所以crop的对应值会对应改变，具体实现逻辑放在前端实现。 后面会写一篇文章关于小程序端的实现。</li>
-</ul>
-</blockquote>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//时间</span></span><br><span class="line"><span class="keyword">if</span> (start &amp;&amp; end)&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">Number</span>(start) &gt; <span class="built_in">Number</span>(end)) &#123;</span><br><span class="line">        <span class="keyword">return</span> res.send(&#123; <span class="attr">err</span>: <span class="number">-4</span>, <span class="attr">msg</span>: <span class="string">'时间参数错误'</span> &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    Option.add(<span class="string">'-ss'</span>,start)</span><br><span class="line">    Option.add(<span class="string">'-to'</span>,end)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//大小限制</span></span><br><span class="line"><span class="keyword">if</span> (sizeLimit &amp;&amp; sizeLimit != <span class="string">'默认'</span>) &#123;</span><br><span class="line">    Option.add(<span class="string">'-fs'</span>, sizeLimit)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//分辨率</span></span><br><span class="line"><span class="keyword">if</span> (dpi) &#123;</span><br><span class="line">    <span class="keyword">if</span> (dpi == <span class="string">'默认'</span>) &#123;</span><br><span class="line">        dpi = <span class="string">'480p'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (dpi.endsWith(<span class="string">'p'</span>)) &#123;</span><br><span class="line">        Option.add(<span class="string">'-vf'</span>, <span class="string">`scale=-2:<span class="subst">$&#123;dpi.substr(<span class="number">0</span>, dpi.length - <span class="number">1</span>)&#125;</span>`</span>)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Option.add(<span class="string">'-s'</span>,dpi)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//帧率</span></span><br><span class="line"><span class="keyword">if</span> (framePerSecond &amp;&amp; framePerSecond != <span class="string">'默认'</span>) &#123;</span><br><span class="line">    Option.add(<span class="string">'-r'</span>, framePerSecond);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//倍速</span></span><br><span class="line"><span class="keyword">if</span> (pts &amp;&amp; pts != <span class="string">'默认'</span>) &#123;</span><br><span class="line">    pts = <span class="built_in">Number</span>(pts)</span><br><span class="line">    pts = <span class="number">1</span> / pts;</span><br><span class="line">    <span class="keyword">if</span> (pts &lt; <span class="number">0.25</span>) &#123;</span><br><span class="line">        pts = <span class="number">0.25</span> </span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pts &gt; <span class="number">4</span>) &#123;</span><br><span class="line">        pts = <span class="number">4</span></span><br><span class="line">    &#125;</span><br><span class="line">    Option.add(<span class="string">'-vf'</span>, <span class="string">`setpts=<span class="subst">$&#123;pts&#125;</span>*PTS`</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//调色</span></span><br><span class="line"><span class="keyword">if</span> (contrast !== <span class="literal">undefined</span> || brightness !== <span class="literal">undefined</span> || saturation !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> list = []</span><br><span class="line">    <span class="keyword">if</span> (contrast !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">        list.push(<span class="string">`contrast=<span class="subst">$&#123;contrast&#125;</span>`</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (brightness !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">        list.push(<span class="string">`brightness=<span class="subst">$&#123;brightness&#125;</span>`</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (saturation !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">        list.push(<span class="string">`saturation=<span class="subst">$&#123;saturation&#125;</span>`</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    Option.add(<span class="string">"-vf"</span>, <span class="string">'eq='</span> + list.join(<span class="string">':'</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (crop) &#123;</span><br><span class="line">    Option.add(<span class="string">'-vf'</span>, <span class="string">`crop=<span class="subst">$&#123;crop&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//特效</span></span><br><span class="line"><span class="keyword">if</span> (effects &amp;&amp; effects != <span class="string">'默认'</span>) &#123;</span><br><span class="line">    <span class="keyword">switch</span>(effects)&#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'边缘'</span> : Option.add(<span class="string">"-vf"</span>, <span class="string">"edgedetect=low=0.1:high=0.4"</span>);<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'油画'</span> : Option.add(<span class="string">"-vf"</span>, <span class="string">"edgedetect=mode=colormix:high=0"</span>);<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'上下切割'</span> : Option.add(<span class="string">"-vf"</span>, <span class="string">"stereo3d=abl:sbsr"</span>);<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'模糊'</span> : Option.add(<span class="string">'-vf'</span>,<span class="string">'boxblur=2:1'</span>);<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'防抖'</span> : Option.add(<span class="string">'-vf'</span>,<span class="string">'deshake=edge=1:search=0'</span>);<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'倒放'</span> : Option.add(<span class="string">'-vf'</span>,<span class="string">'reverse'</span>);<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>: <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="演示"><a href="#演示" class="headerlink" title="演示"></a>演示</h1><blockquote>
-<p>此动图为旧版本演示及生成，新版本功能加了很多懒得录制了，具体扫码体验吧！</p>
-</blockquote>
-<p><img src="https://upload-images.jianshu.io/upload_images/19448222-28f116fdf555061a.gif?imageMogr2/auto-orient/strip" alt="体验"></p>
-<h1 id="体验"><a href="#体验" class="headerlink" title="体验"></a>体验</h1><p>微信搜一搜 <strong>百万工具箱</strong> 或扫码体验<br><img src="http://q9qrv8zcs.bkt.clouddn.com/img/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81-%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE.png" alt="小程序码-视频转动图"></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/05/03/nodejs-ffmpeg-%E5%AE%9E%E7%8E%B0%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -323,10 +244,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/02/hello-world/">
+    <link itemprop="mainEntityOfPage" href="https://skrgiao.fun/2020/05/02/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Jacob Jiang">
       <meta itemprop="description" content="个人博客">
     </span>
@@ -416,7 +337,6 @@
     <span class="toggle-line toggle-line-middle"></span>
     <span class="toggle-line toggle-line-last"></span>
   </div>
-
   <aside class="sidebar">
     <div class="sidebar-inner">
 
@@ -436,6 +356,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jacob Jiang"
+      src="/images/avatar.jpg">
   <p class="site-author-name" itemprop="name">Jacob Jiang</p>
   <div class="site-description" itemprop="description">个人博客</div>
 </div>
@@ -448,16 +370,38 @@
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
   </nav>
 </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/oloshe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;oloshe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
 
 
 
       </div>
-
+	   <div id="music163player">
+        <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=300 height=370 src="//music.163.com/outchain/player?type=0&id=5002477781&auto=0&height=430"></iframe>
+      </div>
     </div>
   </aside>
-  <div id="sidebar-dimmer"></div>
+
+  <div id="sidebar-dimmer">
+
+  </div>
 
 
       </div>
