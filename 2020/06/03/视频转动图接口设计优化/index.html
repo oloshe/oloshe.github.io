@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://cdn.skrgiao.fun/img/palette.png">
 <meta property="og:image" content="http://cdn.skrgiao.fun/img/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81-%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE.png">
 <meta property="article:published_time" content="2020-06-03T03:23:01.000Z">
-<meta property="article:modified_time" content="2020-06-03T13:44:04.125Z">
+<meta property="article:modified_time" content="2020-06-03T15:54:34.093Z">
 <meta property="article:author" content="Jacob Jiang">
 <meta property="article:tag" content="nodejs">
 <meta property="article:tag" content="express">
@@ -196,7 +196,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-06-03 11:23:01 / 修改时间：21:44:04" itemprop="dateCreated datePublished" datetime="2020-06-03T11:23:01+08:00">2020-06-03</time>
+              <time title="创建时间：2020-06-03 11:23:01 / 修改时间：23:54:34" itemprop="dateCreated datePublished" datetime="2020-06-03T11:23:01+08:00">2020-06-03</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -244,12 +244,12 @@
 </ul>
 <p>用 <code>util.promisify</code> 方法把 <code>child_process.exec</code> 方法转换成 <code>promise</code> ，减少回调函数的嵌套。</p>
 <p>需要注意的是：”如果调用 <code>exec</code> 方法的 <code>util.promisify()</code> 版本，则返回 <code>Promise</code>（会传入具有 <code>stdout</code> 和 <code>stderr</code> 属性的 <code>Object</code>）。 返回的 <code>ChildProcess</code> 实例会作为 <code>child</code> 属性附加到 <code>Promise</code>。 如果出现错误（包括导致退出码不为 0 的任何错误），则返回 reject 的 promise，并传入与回调中相同的 <code>error</code> 对象，但是还有两个额外的属性 <code>stdout</code> 和 <code>stderr</code>。” （ 参考： <a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">node 官方文档</a> ）</p>
-<h3 id="优化-路由调用"><a href="#优化-路由调用" class="headerlink" title="优化 - 路由调用"></a>优化 - 路由调用</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">const</span> router = express.Router()</span><br><span class="line"><span class="keyword">const</span> upload = <span class="built_in">require</span>(<span class="string">'../../util/multer'</span>)</span><br><span class="line"><span class="keyword">const</span> ffmpeg = <span class="built_in">require</span>(<span class="string">'./ffmpeg'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上传视频 -&gt; 转成GIF</span></span><br><span class="line">router.post(<span class="string">'/transform/gif'</span>, upload.single(<span class="string">'file'</span>), ffmpeg.transform)</span><br><span class="line"><span class="comment">// 本地视频转换成GIF （无需上传）</span></span><br><span class="line">router.post(<span class="string">'/transform/gif-temp'</span>, ffmpeg.custom_transfrom(<span class="string">'uploads'</span>))</span><br><span class="line"><span class="comment">// 本地动图转换成GIF （GIF修改）</span></span><br><span class="line">router.post(<span class="string">'/transform/gif-local'</span>, ffmpeg.custom_transfrom(<span class="string">'public/picture/gif'</span>))</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = router</span><br></pre></td></tr></table></figure>
+<h3 id="优化-路由调用"><a href="#优化-路由调用" class="headerlink" title="优化 - 路由调用"></a>优化 - 路由调用</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">const</span> router = express.Router()</span><br><span class="line"><span class="keyword">const</span> upload = <span class="built_in">require</span>(<span class="string">'../../util/multer'</span>)</span><br><span class="line"><span class="keyword">const</span> ffmpeg = <span class="built_in">require</span>(<span class="string">'./ffmpeg'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上传视频 -&gt; 转成GIF</span></span><br><span class="line">router.post(<span class="string">'/gif'</span>, upload.single(<span class="string">'file'</span>), ffmpeg.transform)</span><br><span class="line"><span class="comment">// 本地视频转换成GIF （无需上传）</span></span><br><span class="line">router.post(<span class="string">'/gif-temp'</span>, ffmpeg.custom_transfrom(<span class="string">'uploads'</span>))</span><br><span class="line"><span class="comment">// 本地动图转换成GIF （GIF修改）</span></span><br><span class="line">router.post(<span class="string">'/gif-local'</span>, ffmpeg.custom_transfrom(<span class="string">'public/picture/gif'</span>))</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = router</span><br></pre></td></tr></table></figure>
 
 <p><code>upload</code> 是中间件 <code>multer</code> 构造出的 <code>multer</code> 对象。</p>
-<p><code>/transform/gif</code> ：<code>upload.single()</code> 上传文件，再调用 <code>ffmpeg.transform</code> 生成成 <em>gif</em>。</p>
-<p><code>/transform/gif-temp</code> ：用户调用 <code>/transform/gif</code>上传视频文件之后，再次视频转动图时无需再次上传，只需调用该接口从上传文件夹找到对应的文件转换就行了。</p>
-<p><code>/transform/gif-local</code> ：与上面的类似，只是切换了文件夹路径，在生成的 <em>gif</em> 里找到对应的文件，再根据 <code>body</code> 数据把 <em>gif</em> 转换成对应格式。</p>
+<p><code>/gif</code> ：<code>upload.single()</code> 上传文件，再调用 <code>ffmpeg.transform</code> 生成成 <em>gif</em>。</p>
+<p><code>/gif-temp</code> ：用户调用 <code>/transform/gif</code>上传视频文件之后，再次视频转动图时无需再次上传，只需调用该接口从上传文件夹找到对应的文件转换就行了。</p>
+<p><code>/gif-local</code> ：与上面的类似，只是切换了文件夹路径，在生成的 <em>gif</em> 里找到对应的文件，再根据 <code>body</code> 数据把 <em>gif</em> 转换成对应格式。</p>
 <h3 id="优化-使用全局调色板提升动图质量"><a href="#优化-使用全局调色板提升动图质量" class="headerlink" title="优化 - 使用全局调色板提升动图质量"></a>优化 - 使用全局调色板提升动图质量</h3><blockquote>
 <p> 此处参考：</p>
 <p> <a href="https://www.linuxidc.com/Linux/2015-05/118210.htm" target="_blank" rel="noopener">Linux公社 - 使用 FFmpeg 处理高质量 GIF 图片</a> </p>
@@ -277,7 +277,6 @@
 
 <h3 id="前端体验"><a href="#前端体验" class="headerlink" title="前端体验"></a>前端体验</h3><p><img src="http://cdn.skrgiao.fun/img/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81-%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE.png" alt="小程序码-视频转动图"></p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>服务端的优化，总是朝着高内聚低耦合的方向。简而言之，就是抽象 + 模块化。后端是为前端服务的，有时候不仅后端需要优化，前端也需要配合后端做优化。有空写一篇视频转动图小程序端的实现。</p>
-<p>以上均为本人亲身经验和一些拙略之见，对各位大佬们来说不值一提~</p>
 
     </div>
 
