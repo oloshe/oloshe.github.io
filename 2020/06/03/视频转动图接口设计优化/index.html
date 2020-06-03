@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"skrgiao.fun","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="上回说到 nodejs + ffmpeg 实现视频转动图，只是讲述了最基本的流程，从设计上看比较拙略，有许多可以改进的地方。本文主要从以下几个角度进行优化  抽离出视频转动图的逻辑作为一个 RequestHandler （中间件）； 在该中间件的基础上新增更多接口服务； 抽离出 Option 设计成一个 class （用于执行 ffmpeg 命令行的类）； 使用 crontab 定时执行删除任务，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="视频转动图接口设计优化">
+<meta property="og:url" content="https://skrgiao.fun/2020/06/03/%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="雅各布的博客">
+<meta property="og:description" content="上回说到 nodejs + ffmpeg 实现视频转动图，只是讲述了最基本的流程，从设计上看比较拙略，有许多可以改进的地方。本文主要从以下几个角度进行优化  抽离出视频转动图的逻辑作为一个 RequestHandler （中间件）； 在该中间件的基础上新增更多接口服务； 抽离出 Option 设计成一个 class （用于执行 ffmpeg 命令行的类）； 使用 crontab 定时执行删除任务，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://cdn.skrgiao.fun/img/palette.png">
+<meta property="og:image" content="http://cdn.skrgiao.fun/img/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81-%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE.png">
+<meta property="article:published_time" content="2020-06-03T03:23:01.000Z">
+<meta property="article:modified_time" content="2020-06-03T13:44:04.125Z">
+<meta property="article:author" content="Jacob Jiang">
+<meta property="article:tag" content="nodejs">
+<meta property="article:tag" content="express">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://cdn.skrgiao.fun/img/palette.png">
+
+<link rel="canonical" href="https://skrgiao.fun/2020/06/03/%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1%E4%BC%98%E5%8C%96/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>视频转动图接口设计优化 | 雅各布的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">雅各布的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Jacob's Blog</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://skrgiao.fun/2020/06/03/%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Jacob Jiang">
+      <meta itemprop="description" content="个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雅各布的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          视频转动图接口设计优化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-03 11:23:01 / 修改时间：21:44:04" itemprop="dateCreated datePublished" datetime="2020-06-03T11:23:01+08:00">2020-06-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">编程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>上回说到 <a href="https://oloshe.github.io/2020/05/03/nodejs-ffmpeg-实现视频转动图/" target="_blank" rel="noopener">nodejs + ffmpeg 实现视频转动图</a>，只是讲述了最基本的流程，从设计上看比较拙略，有许多可以改进的地方。本文主要从以下几个角度进行优化</p>
+<ol>
+<li>抽离出视频转动图的逻辑作为一个 <code>RequestHandler</code> （中间件）；</li>
+<li>在该中间件的基础上新增更多接口服务；</li>
+<li>抽离出 <code>Option</code> 设计成一个 <code>class</code> （用于执行 ffmpeg 命令行的类）；</li>
+<li>使用 <code>crontab</code> 定时执行删除任务，替代 <code>setTimeout</code> 定时器任务；</li>
+<li>使用 <code>ffmpeg</code> 生成 <strong>全局调色板</strong> 增加画面质量</li>
+</ol>
+<a id="more"></a>
+
+<h3 id="优化-封装-Option-为-class-对象"><a href="#优化-封装-Option-为-class-对象" class="headerlink" title="优化 - 封装 Option 为 class 对象"></a>优化 - 封装 Option 为 class 对象</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ffmpegOption.js</span></span><br><span class="line"><span class="keyword">const</span> propertys = [<span class="string">'-v'</span>, <span class="string">'-ss'</span>, <span class="string">'-to'</span>, <span class="string">'-i'</span>, <span class="string">'-fs'</span>, <span class="string">'-crf'</span>, <span class="string">'-preset'</span>, <span class="string">'-vf'</span>, <span class="string">"-lavfi"</span>, <span class="string">'-s'</span>, <span class="string">'-r'</span>, <span class="string">'-y'</span>]</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="class"><span class="keyword">class</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span> () &#123;</span><br><span class="line">    <span class="keyword">this</span>.init()</span><br><span class="line">  &#125;</span><br><span class="line">  init() &#123;</span><br><span class="line">    propertys.forEach(<span class="function"><span class="params">x</span> =&gt;</span> <span class="keyword">this</span>[x] = <span class="string">''</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  add(name, value) &#123;</span><br><span class="line">    <span class="keyword">this</span>[name] += (<span class="keyword">this</span>[name] ? <span class="string">','</span> : <span class="string">''</span>) + value</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">set</span>(name, value) &#123;</span><br><span class="line">    <span class="keyword">this</span>[name] = value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">get</span>(name) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>[name] ? <span class="string">`<span class="subst">$&#123;name&#125;</span> <span class="subst">$&#123;<span class="keyword">this</span>[name]&#125;</span> `</span> : <span class="string">''</span></span><br><span class="line">  &#125;</span><br><span class="line">  getValue(name) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>[name]</span><br><span class="line">  &#125;</span><br><span class="line">  toString() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'ffmpeg '</span> + propertys.reduce(<span class="function">(<span class="params">(p, c</span>) =&gt;</span> p + <span class="keyword">this</span>.get(c)), <span class="string">''</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于某些场景需要，添加了 <code>set</code> 、<code>getValue</code> 方法。使用时只需要引入该模块然后实例化即可。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> ffmpegOption = <span class="built_in">require</span>(<span class="string">"./ffmpegOption"</span>)</span><br><span class="line"><span class="keyword">const</span> Option = <span class="keyword">new</span> ffmpegOption()</span><br></pre></td></tr></table></figure>
+
+<p>关于 <code>propertys</code> 的设置，可以参考 <a href="https://www.ffmpeg.org/ffmpeg.html" target="_blank" rel="noopener"><strong>ffmpeg 官方文档</strong></a> 。</p>
+<h3 id="优化-视频转动图-handler"><a href="#优化-视频转动图-handler" class="headerlink" title="优化 - 视频转动图 handler"></a>优化 - 视频转动图 handler</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ffmpeg.js</span></span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>)</span><br><span class="line"><span class="keyword">const</span> util = <span class="built_in">require</span>(<span class="string">'util'</span>);</span><br><span class="line"><span class="keyword">const</span> child = <span class="built_in">require</span>(<span class="string">'child_process'</span>)</span><br><span class="line"><span class="keyword">const</span> exec = util.promisify(child.exec);</span><br><span class="line"><span class="keyword">const</span> ffmpegOption = <span class="built_in">require</span>(<span class="string">"./ffmpegOption"</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">custom_transfrom</span>(<span class="params">path</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> &#123; filename &#125; = req.body</span><br><span class="line">    <span class="keyword">const</span> filePath = <span class="built_in">require</span>(<span class="string">'path'</span>).join(path, filename)</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      fs.statSync(filePath)</span><br><span class="line">    &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> res.send(&#123; <span class="attr">err</span>: <span class="number">-4</span>, <span class="attr">msg</span>: <span class="string">'File Not Found'</span>&#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    req.file = &#123;</span><br><span class="line">      filename,</span><br><span class="line">      path: filePath,</span><br><span class="line">    &#125;</span><br><span class="line">    transform(req, res)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">transform</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  transform,</span><br><span class="line">  custom_transfrom,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该模块里两个方法：</p>
+<ul>
+<li><code>transform</code> ：转换动图的方法。</li>
+<li><code>custom_transform</code> ：高阶函数，接受一个路径参数，返回一个自定义文件路径的 hander，把文件信息挂载在 <code>req.file</code> 然后调用 <code>transform</code> ，用于处理服务器本地文件的文件，无需用户上传。</li>
+</ul>
+<p>用 <code>util.promisify</code> 方法把 <code>child_process.exec</code> 方法转换成 <code>promise</code> ，减少回调函数的嵌套。</p>
+<p>需要注意的是：”如果调用 <code>exec</code> 方法的 <code>util.promisify()</code> 版本，则返回 <code>Promise</code>（会传入具有 <code>stdout</code> 和 <code>stderr</code> 属性的 <code>Object</code>）。 返回的 <code>ChildProcess</code> 实例会作为 <code>child</code> 属性附加到 <code>Promise</code>。 如果出现错误（包括导致退出码不为 0 的任何错误），则返回 reject 的 promise，并传入与回调中相同的 <code>error</code> 对象，但是还有两个额外的属性 <code>stdout</code> 和 <code>stderr</code>。” （ 参考： <a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">node 官方文档</a> ）</p>
+<h3 id="优化-路由调用"><a href="#优化-路由调用" class="headerlink" title="优化 - 路由调用"></a>优化 - 路由调用</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">const</span> router = express.Router()</span><br><span class="line"><span class="keyword">const</span> upload = <span class="built_in">require</span>(<span class="string">'../../util/multer'</span>)</span><br><span class="line"><span class="keyword">const</span> ffmpeg = <span class="built_in">require</span>(<span class="string">'./ffmpeg'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上传视频 -&gt; 转成GIF</span></span><br><span class="line">router.post(<span class="string">'/transform/gif'</span>, upload.single(<span class="string">'file'</span>), ffmpeg.transform)</span><br><span class="line"><span class="comment">// 本地视频转换成GIF （无需上传）</span></span><br><span class="line">router.post(<span class="string">'/transform/gif-temp'</span>, ffmpeg.custom_transfrom(<span class="string">'uploads'</span>))</span><br><span class="line"><span class="comment">// 本地动图转换成GIF （GIF修改）</span></span><br><span class="line">router.post(<span class="string">'/transform/gif-local'</span>, ffmpeg.custom_transfrom(<span class="string">'public/picture/gif'</span>))</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = router</span><br></pre></td></tr></table></figure>
+
+<p><code>upload</code> 是中间件 <code>multer</code> 构造出的 <code>multer</code> 对象。</p>
+<p><code>/transform/gif</code> ：<code>upload.single()</code> 上传文件，再调用 <code>ffmpeg.transform</code> 生成成 <em>gif</em>。</p>
+<p><code>/transform/gif-temp</code> ：用户调用 <code>/transform/gif</code>上传视频文件之后，再次视频转动图时无需再次上传，只需调用该接口从上传文件夹找到对应的文件转换就行了。</p>
+<p><code>/transform/gif-local</code> ：与上面的类似，只是切换了文件夹路径，在生成的 <em>gif</em> 里找到对应的文件，再根据 <code>body</code> 数据把 <em>gif</em> 转换成对应格式。</p>
+<h3 id="优化-使用全局调色板提升动图质量"><a href="#优化-使用全局调色板提升动图质量" class="headerlink" title="优化 - 使用全局调色板提升动图质量"></a>优化 - 使用全局调色板提升动图质量</h3><blockquote>
+<p> 此处参考：</p>
+<p> <a href="https://www.linuxidc.com/Linux/2015-05/118210.htm" target="_blank" rel="noopener">Linux公社 - 使用 FFmpeg 处理高质量 GIF 图片</a> </p>
+<p><a href="https://www.oschina.net/translate/high-quality-gif-with-ffmpeg" target="_blank" rel="noopener">OSCHINA - 使用 FFmpeg 处理高质量 GIF 图片</a></p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ffmpeg.js transform funciton</span></span><br><span class="line"><span class="comment">// 调色板图片路径</span></span><br><span class="line">PalettePicPath = <span class="string">`tmp/palette-<span class="subst">$&#123;filename&#125;</span>.png`</span>;</span><br><span class="line"><span class="keyword">await</span> exec(<span class="string">`ffmpeg <span class="subst">$&#123;Option.get(<span class="string">'-ss'</span>) + Option.get(<span class="string">'-to'</span>)&#125;</span> -i <span class="subst">$&#123;path&#125;</span> -vf palettegen  -y <span class="subst">$&#123;PalettePicPath&#125;</span>`</span>)</span><br><span class="line">    .catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">    	<span class="built_in">console</span>.error(<span class="string">"全局调色板生成错误："</span>, err);</span><br><span class="line">	&#125;)</span><br><span class="line">Option.add(<span class="string">'-i'</span>, PalettePicPath)</span><br><span class="line">Option.add(<span class="string">'-lavfi'</span>, Option.getValue(<span class="string">'-vf'</span>))</span><br><span class="line">Option.add(<span class="string">'-lavfi'</span>, <span class="string">`paletteuse`</span>)</span><br><span class="line">Option.set(<span class="string">'-vf'</span>, <span class="string">''</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>-ss</code> 和 <code>-to</code>  指定开始和结束时间，以减少生成的时间，在 <code>-vf</code> 添加 <code>&quot;palettegen&quot;</code> 。这个滤波器对每一帧的所有颜色制作一个直方图，并且基于这些生成一个调色板。</p>
+<p><img src="http://cdn.skrgiao.fun/img/palette.png" alt="palette"></p>
+<p>将调色板作为输入源需要指定两个<code>-i</code> （一个源文件、一个调色板文件），  <code>-vf</code> 的配置需要换成 <code>-lavfi</code> 以配置全局的滤波 （同<code>-filter_complex</code>)，并同样在后边添加 <code>&quot;paletteuse&quot;</code>。</p>
+<p>因为要指定两个输入源，所以在后面配置 <code>-i</code> 时需要这样：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// -i input.mp4 -i palette.png</span></span><br><span class="line">Option.set(<span class="string">'-i'</span>, <span class="string">`<span class="subst">$&#123;path&#125;</span> <span class="subst">$&#123;Option.get(<span class="string">'-i'</span>)&#125;</span>`</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>path</code> 为源文件路径，<code>Option.get(&#39;-i&#39;)</code> 为上文添加的配置。</p>
+<blockquote>
+<p>这是为什么 ffmpegOption.js 中要添加 <code>set()</code> 和 <code>getValue()</code> 的原因，实现的方法有很多种，这里选择了最省事的方法</p>
+</blockquote>
+<h3 id="Crontab-定时删除文件"><a href="#Crontab-定时删除文件" class="headerlink" title="Crontab 定时删除文件"></a>Crontab 定时删除文件</h3><p>上回使用 <code>setTimeout</code> 来执行定时任务，当访问量较大时，由于闭包导致内存泄露，会让服务器性能下降，是一个不靠谱的设计。</p>
+<p>使用 crontab，每小时执行一次 查找并删除两小时前的 gif 和 mp4 文件。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">0  *  *   *   *     find /root/miniprogram/ -regex ".+\.\(gif\|mp4\)$" -mmin +120  -exec rm &#123;&#125; \;</span><br></pre></td></tr></table></figure>
+
+<h3 id="exec-执行命令"><a href="#exec-执行命令" class="headerlink" title="exec 执行命令"></a>exec 执行命令</h3><p>去掉了 <code>child_process.exec</code> 的回调函数，和 <code>setTimeout</code> 函数，整个世界变得很清静。</p>
+<p>转换后删除配色板文件，再返回即可。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ffmpeg.js transform funciton</span></span><br><span class="line"><span class="keyword">const</span> ffmpegCommand = Option.toString()</span><br><span class="line"></span><br><span class="line"><span class="keyword">await</span> exec(ffmpegCommand)</span><br><span class="line">  .catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.error(err)</span><br><span class="line">    res.send(&#123; <span class="attr">err</span>: <span class="number">-1</span>, <span class="attr">msg</span>: <span class="string">'exec error'</span> &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">PalettePicPath &amp;&amp; fs.unlink(PalettePicPath, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"配色板文件清除"</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> expired = +<span class="keyword">new</span> <span class="built_in">Date</span>() + <span class="number">3</span> * <span class="number">60</span> * <span class="number">60</span> * <span class="number">1000</span></span><br><span class="line"><span class="keyword">const</span> stat = fs.statSync(rfilen)</span><br><span class="line">res.send(&#123;</span><br><span class="line">  err: <span class="number">0</span>,</span><br><span class="line">  msg: <span class="string">`ok`</span>,</span><br><span class="line">  url: <span class="string">`https://<span class="subst">$&#123;config.host&#125;</span>/<span class="subst">$&#123;rfilen&#125;</span>`</span>,</span><br><span class="line">  size: stat.size,</span><br><span class="line">  expiredIn: expired,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="前端体验"><a href="#前端体验" class="headerlink" title="前端体验"></a>前端体验</h3><p><img src="http://cdn.skrgiao.fun/img/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81-%E8%A7%86%E9%A2%91%E8%BD%AC%E5%8A%A8%E5%9B%BE.png" alt="小程序码-视频转动图"></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>服务端的优化，总是朝着高内聚低耦合的方向。简而言之，就是抽象 + 模块化。后端是为前端服务的，有时候不仅后端需要优化，前端也需要配合后端做优化。有空写一篇视频转动图小程序端的实现。</p>
+<p>以上均为本人亲身经验和一些拙略之见，对各位大佬们来说不值一提~</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/nodejs/" rel="tag"># nodejs</a>
+              <a href="/tags/express/" rel="tag"># express</a>
+              <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/17/nodejs%E9%9D%A2%E8%AF%95%E9%A2%98%E6%80%BB%E7%BB%93%EF%BC%88%E4%B8%80%EF%BC%89/" rel="prev" title="nodejs面试题总结（一）">
+      <i class="fa fa-chevron-left"></i> nodejs面试题总结（一）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#优化-封装-Option-为-class-对象"><span class="nav-number">1.</span> <span class="nav-text">优化 - 封装 Option 为 class 对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化-视频转动图-handler"><span class="nav-number">2.</span> <span class="nav-text">优化 - 视频转动图 handler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化-路由调用"><span class="nav-number">3.</span> <span class="nav-text">优化 - 路由调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化-使用全局调色板提升动图质量"><span class="nav-number">4.</span> <span class="nav-text">优化 - 使用全局调色板提升动图质量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Crontab-定时删除文件"><span class="nav-number">5.</span> <span class="nav-text">Crontab 定时删除文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exec-执行命令"><span class="nav-number">6.</span> <span class="nav-text">exec 执行命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前端体验"><span class="nav-number">7.</span> <span class="nav-text">前端体验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jacob Jiang"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Jacob Jiang</p>
+  <div class="site-description" itemprop="description">个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/oloshe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;oloshe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+    </div>
+  </aside>
+
+  <div id="sidebar-dimmer">
+
+  </div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jacob Jiang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
